@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  osticket-db:
+    image: mysql:8.0
+    container_name: osticket-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: osticket
+      MYSQL_USER: osticket
+      MYSQL_PASSWORD: osticketpass123
+    volumes:
+      - osticket_db_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - osticket-network
+    command: --default-authentication-plugin=mysql_native_password
+
+  osticket:
+    image: osticket/osticket:latest
+    container_name: osticket-app
+    restart: unless-stopped
+    depends_on:
+      - osticket-db
+    environment:
+      # Database Configuration
+      MYSQL_HOST: osticket-db
+      MYSQL_DATABASE: osticket
+      MYSQL_USER: osticket
+      MYSQL_PASSWORD: osticketpass123
+      
+      # osTicket Configuration
+      INSTALL_SECRET: your-secret-key-here-change-this
+      INSTALL_CONFIG: |
+        <?php
+        return array(
+            'url' => 'http://localhost:8080/',
+            'admin' => array(
+                'firstname' => 'Admin',
+                'lastname' => 'User',
+                'email' => 'admin@example.com',
+                'username' => 'admin',
+                'passwd' => 'Admin123!',
+                'passwd2' => 'Admin123!',
+            ),
+            'database' => array(
+                'host' => 'osticket-db',
+                'name' => 'osticket',
+                'user' => 'osticket',
+                'pass' => 'osticketpass123',
+            ),
+            'siri' => 'Administrative Panel',
+            'name' => 'osTicket Support System',
+        );
+      
+      # Email Configuration (optional - configure as needed)
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_FROM: noreply@example.com
+      SMTP_TLS: 'true'
+      SMTP_USER: ''
+      SMTP_PASS: ''
+    ports:
+      - "8080:80"
+    volumes:
+      - osticket_data:/var/www/html
+      - osticket_uploads:/var/www/html/upload
+    networks:
+      - osticket-network
+
+  # Optional: phpMyAdmin for database management
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: osticket-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - osticket-db
+    environment:
+      PMA_HOST: osticket-db
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword123
+      MYSQL_ROOT_PASSWORD: rootpassword123
+    ports:
+      - "8081:80"
+    networks:
+      - osticket-network
+
+volumes:
+  osticket_db_data:
+    driver: local
+  osticket_data:
+    driver: local
+  osticket_uploads:
+    driver: local
+
+networks:
+  osticket-network:
+    driver: bridge
