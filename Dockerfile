@@ -12,8 +12,11 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libonig-dev \
     libxml2-dev \
+    libc-client-dev \
+    libkrb5-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd mysqli intl zip xml mbstring bcmath \
+    && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
+    && docker-php-ext-install -j$(nproc) gd mysqli intl zip xml mbstring bcmath imap \
     && a2enmod rewrite
 
 # Enable Apache mod_rewrite

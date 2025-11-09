@@ -48,6 +48,58 @@ Production-ready Docker Compose stack for osTicket with MySQL and phpMyAdmin.
   - `MYSQL_USER`: `osticket`
   - `MYSQL_PASSWORD`: `osticketpass123`
 - osTicket (`osticket-app`)
+  - `INSTALL_SECRET`: `set-a-strong-secret-here`
+  - `TZ`: `UTC`
+  - Email Configuration:
+    - `SMTP_HOST`: Your SMTP server hostname
+    - `SMTP_PORT`: SMTP port (typically 587 for TLS or 465 for SSL)
+    - `SMTP_USERNAME`: Your email username/address
+    - `SMTP_PASSWORD`: Your email password
+    - `SMTP_ENCRYPTION`: `tls` or `ssl`
+    - `SMTP_FROM_EMAIL`: Support email address
+    - `SMTP_FROM_NAME`: Support team name
+
+### Email Configuration Setup
+1. Email support is enabled by default with the necessary PHP extensions (IMAP, etc.)
+
+2. Configure your SMTP settings in `docker-compose.yml`:
+   ```yaml
+   osticket-app:
+     environment:
+       # ... other settings ...
+       SMTP_HOST: "smtp.example.com"
+       SMTP_PORT: 587
+       SMTP_USERNAME: "your-email@example.com"
+       SMTP_PASSWORD: "your-email-password"
+       SMTP_ENCRYPTION: "tls"
+       SMTP_FROM_EMAIL: "support@example.com"
+       SMTP_FROM_NAME: "Support Team"
+   ```
+
+3. Common SMTP configurations:
+   - Gmail:
+     - Host: smtp.gmail.com
+     - Port: 587
+     - Encryption: TLS
+     - Note: For Gmail, you may need to use an App Password if 2FA is enabled
+   - Office 365:
+     - Host: smtp.office365.com
+     - Port: 587
+     - Encryption: TLS
+   - Amazon SES:
+     - Host: email-smtp.[region].amazonaws.com
+     - Port: 587
+     - Encryption: TLS
+
+4. After updating the SMTP settings, rebuild and restart the containers:
+   ```bash
+   docker-compose build && docker-compose up -d
+   ```
+
+5. Verify email settings in osTicket Admin Panel:
+   - Login to Admin Panel
+   - Go to Admin Panel → Settings → Emails
+   - Test email configuration using the "Send Test Email" feature
   - `MYSQL_HOST`: `osticket-mysql`
   - `MYSQL_PORT`: `3306`
   - `MYSQL_USER`: `osticket`

@@ -46,6 +46,14 @@ services:
       PUID: 1000
       PGID: 1000
       TZ: UTC
+      # Email Configuration
+      SMTP_HOST: "smtp.example.com"
+      SMTP_PORT: 587
+      SMTP_USERNAME: "your-email@example.com"
+      SMTP_PASSWORD: "your-email-password"
+      SMTP_ENCRYPTION: "tls"
+      SMTP_FROM_EMAIL: "support@example.com"
+      SMTP_FROM_NAME: "Support Team"
     depends_on:
       osticket-mysql:
         condition: service_healthy
