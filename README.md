@@ -1,167 +1,275 @@
-## osTicket on Docker
+# osTicket Docker Setup
 
-Production-ready Docker Compose stack for osTicket with MySQL and phpMyAdmin.
+A production-ready Docker Compose configuration for osTicket with MySQL 8.0 and phpMyAdmin, designed for rapid deployment and simplified management.
 
-### Stack
-- **osTicket app**: Apache + PHP 8.2, built from source via the included `Dockerfile`
-- **MySQL 8.0**: Persistent database with healthcheck
-- **phpMyAdmin**: Web UI for DB administration
+## Features
 
-### Requirements
-- Docker
-- Docker Compose v2
+- **osTicket**: Latest version of the open-source ticketing system
+- **MySQL 8.0**: Reliable database backend with persistent storage
+- **phpMyAdmin**: Optional web-based database management interface
+- **Volume Persistence**: All data survives container restarts and updates
+- **Simple Configuration**: Environment-based settings for easy customization
 
-### Quick Start
-1. Build the osTicket image (recommended for this repo):
+## Quick Start
+
+### Prerequisites
+
+- Docker Engine 20.10+
+- Docker Compose 2.0+
+
+### Installation
+
+1. Clone the repository:
    ```bash
-   docker build -t osticket-app:latest ./osticket-docker/
+   git clone https://github.com/1ndevelopment/osticket-docker.git
+   cd osticket-docker
    ```
-   - Or change the compose service to `build: osticket-docker:latest`.
 
-2. Launch:
+2. Launch the stack:
    ```bash
-   docker compose -f ./osticket-docker/docker-compose.yml up -d
+   docker-compose up -d
    ```
 
-3. Open:
-   - osTicket: `http://localhost:8080`
-   - phpMyAdmin: `http://localhost:8081` (Host: `osticket-mysql`, User: `root`, Password: `rootpassword`)
+3. Wait for initialization (2-3 minutes on first run)
 
-4. Complete the osTicket installer:
-   - DB Host: `osticket-mysql`
-   - DB Name: `osticket`
-   - DB User: `osticket`
-   - DB Password: `osticketpass123`
-   - Set a strong admin password and ensure `INSTALL_SECRET` is a strong, stable value.
+4. Access the application:
+   - **osTicket**: http://localhost:8080
+   - **phpMyAdmin**: http://localhost:8081
 
-### Ports
-- `8080 -> 80` osTicket (Apache/PHP)
-- `8081 -> 80` phpMyAdmin
+## Default Credentials
 
-### Data Persistence
-- MySQL data is stored in the named volume `osticket-mysql-data`.
+### osTicket Admin Panel
+- **URL**: http://localhost:8080/scp/
+- **Username**: `admin`
+- **Password**: `Admin123!`
 
-### Configuration (docker-compose.yml)
-- MySQL (`osticket-mysql`)
-  - `MYSQL_ROOT_PASSWORD`: `rootpassword`
-  - `MYSQL_DATABASE`: `osticket`
-  - `MYSQL_USER`: `osticket`
-  - `MYSQL_PASSWORD`: `osticketpass123`
-- osTicket (`osticket-app`)
-  - `INSTALL_SECRET`: `set-a-strong-secret-here`
-  - `TZ`: `UTC`
-  - Email Configuration:
-    - `SMTP_HOST`: Your SMTP server hostname
-    - `SMTP_PORT`: SMTP port (typically 587 for TLS or 465 for SSL)
-    - `SMTP_USERNAME`: Your email username/address
-    - `SMTP_PASSWORD`: Your email password
-    - `SMTP_ENCRYPTION`: `tls` or `ssl`
-    - `SMTP_FROM_EMAIL`: Support email address
-    - `SMTP_FROM_NAME`: Support team name
+⚠️ **Change these credentials immediately after first login**
 
-### Email Configuration Setup
-1. Email support is enabled by default with the necessary PHP extensions (IMAP, etc.)
+### Database
+- **Host**: `osticket-db`
+- **Database**: `osticket`
+- **User**: `osticket`
+- **Password**: `osticketpass123`
 
-2. Configure your SMTP settings in `docker-compose.yml`:
-   ```yaml
-   osticket-app:
-     environment:
-       # ... other settings ...
-       SMTP_HOST: "smtp.example.com"
-       SMTP_PORT: 587
-       SMTP_USERNAME: "your-email@example.com"
-       SMTP_PASSWORD: "your-email-password"
-       SMTP_ENCRYPTION: "tls"
-       SMTP_FROM_EMAIL: "support@example.com"
-       SMTP_FROM_NAME: "Support Team"
-   ```
+### phpMyAdmin
+- **URL**: http://localhost:8081
+- **Username**: `root`
+- **Password**: `rootpassword123`
 
-3. Common SMTP configurations:
-   - Gmail:
-     - Host: smtp.gmail.com
-     - Port: 587
-     - Encryption: TLS
-     - Note: For Gmail, you may need to use an App Password if 2FA is enabled
-   - Office 365:
-     - Host: smtp.office365.com
-     - Port: 587
-     - Encryption: TLS
-   - Amazon SES:
-     - Host: email-smtp.[region].amazonaws.com
-     - Port: 587
-     - Encryption: TLS
+## Configuration
 
-4. After updating the SMTP settings, rebuild and restart the containers:
-   ```bash
-   docker-compose build && docker-compose up -d
-   ```
+### Database Settings
 
-5. Verify email settings in osTicket Admin Panel:
-   - Login to Admin Panel
-   - Go to Admin Panel → Settings → Emails
-   - Test email configuration using the "Send Test Email" feature
-  - `MYSQL_HOST`: `osticket-mysql`
-  - `MYSQL_PORT`: `3306`
-  - `MYSQL_USER`: `osticket`
-  - `MYSQL_PASSWORD`: `osticketpass123`
-  - `MYSQL_DATABASE`: `osticket`
-  - `INSTALL_SECRET`: set a strong random value
-  - `PUID`: `1000`
-  - `PGID`: `1000`
-  - `TZ`: `UTC`
-- phpMyAdmin (`osticket-phpmyadmin`)
-  - `PMA_HOST`: `osticket-mysql`
-  - `MYSQL_ROOT_PASSWORD`: must match MySQL root password
+Edit `docker-compose.yml` to customize database parameters:
 
-Change all default passwords and secrets before any non-local deployment.
-
-### Build Details (Dockerfile)
-- Base: `php:8.2-apache`
-- Installs PHP extensions: `gd`, `mysqli`, `intl`, `zip`, `xml`, `mbstring`, `bcmath`
-- Clones `https://github.com/osTicket/osTicket` into `/var/www/html`
-- Runs `php manage.php deploy --setup /var/www/html/`
-- Enables Apache `mod_rewrite`
-- Exposes port `80`
-
-If using Compose to build, edit the osTicket service:
 ```yaml
-# in ./osticket-docker/docker-compose.yml
-# replace:
-#   image: docker.io/library/osticket-app:latest
-# with:
-#   build: osticket-docker:latest
+environment:
+  MYSQL_HOST: osticket-db
+  MYSQL_DATABASE: osticket
+  MYSQL_USER: osticket
+  MYSQL_PASSWORD: osticketpass123
 ```
 
-### Operations
-- Logs:
-  ```bash
-  docker compose -f ./osticket-docker/docker-compose.yml logs -f
-  ```
-- Restart:
-  ```bash
-  docker compose -f ./osticket-docker/docker-compose.yml restart
-  ```
-- Stop/Remove:
-  ```bash
-  docker compose -f ./osticket-docker/docker-compose.yml down
-  ```
-- Remove DB data (irreversible):
-  ```bash
-  docker volume rm osticket-mysql-data
-  ```
+### Email Notifications
 
-### Troubleshooting
-- Can’t connect to DB:
-  - Wait for MySQL healthcheck; verify creds match across services.
-- Installer loops/fails:
-  - Ensure `INSTALL_SECRET` is set and unchanged across restarts.
-- phpMyAdmin login fails:
-  - Use host `osticket-mysql`; confirm root/user passwords.
+To enable SMTP email support:
 
-### Security
-- Replace all default passwords and `INSTALL_SECRET`.
-- Limit exposure of phpMyAdmin; disable when not needed.
-- Consider backups for `osticket-mysql-data` and config exports.
+1. Update the osTicket service environment in `docker-compose.yml`:
+   ```yaml
+   SMTP_HOST: smtp.gmail.com
+   SMTP_PORT: 587
+   SMTP_FROM: noreply@example.com
+   SMTP_USER: your-email@gmail.com
+   SMTP_PASS: your-app-password
+   ```
 
-### License
-This configuration is provided as-is. osTicket is licensed by its upstream project.
+2. Restart the services:
+   ```bash
+   docker-compose restart osticket
+   ```
+
+### Security Configuration
+
+Change the installation secret in `docker-compose.yml`:
+
+```yaml
+INSTALL_SECRET: your-unique-secret-key-change-this
+```
+
+## Management
+
+### Service Control
+
+```bash
+# Start all services
+docker-compose up -d
+
+# Stop all services
+docker-compose down
+
+# Restart services
+docker-compose restart
+
+# Restart specific service
+docker-compose restart osticket
+```
+
+### View Logs
+
+```bash
+# All services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f osticket
+docker-compose logs -f osticket-db
+```
+
+### Update Services
+
+```bash
+docker-compose pull
+docker-compose up -d
+```
+
+## Data Persistence
+
+Data is stored in named Docker volumes:
+
+- `osticket_db_data` - MySQL database files
+- `osticket_data` - osTicket application files
+- `osticket_uploads` - User file attachments
+
+### Backup
+
+#### Database Backup
+```bash
+docker-compose exec osticket-db mysqldump -u root -prootpassword123 osticket > backup-$(date +%Y%m%d).sql
+```
+
+#### Full Volume Backup
+```bash
+docker run --rm \
+  -v osticket_db_data:/data \
+  -v $(pwd):/backup \
+  alpine tar czf /backup/osticket_volumes_$(date +%Y%m%d).tar.gz /data
+```
+
+### Restore
+
+#### Database Restore
+```bash
+docker-compose exec -T osticket-db mysql -u root -prootpassword123 osticket < backup.sql
+```
+
+## Security Best Practices
+
+### Essential Security Steps
+
+1. **Change All Default Passwords**
+   - Database root and user passwords
+   - osTicket admin password
+   - `INSTALL_SECRET` value
+
+2. **Use Environment Files**
+   ```bash
+   # Create .env file for sensitive data
+   cat > .env << EOF
+   MYSQL_ROOT_PASSWORD=your-secure-password
+   MYSQL_PASSWORD=another-secure-password
+   INSTALL_SECRET=random-secret-key
+   EOF
+   
+   # Update docker-compose.yml to reference .env variables
+   ```
+
+3. **Enable HTTPS**
+   - Deploy behind a reverse proxy (nginx, Traefik, Caddy)
+   - Configure SSL/TLS certificates (Let's Encrypt recommended)
+
+4. **Production Hardening**
+   - Remove phpMyAdmin service in production environments
+   - Configure firewall rules to restrict port access
+   - Use Docker secrets for sensitive data
+   - Enable Docker's user namespace remapping
+
+5. **Regular Maintenance**
+   ```bash
+   # Update containers regularly
+   docker-compose pull && docker-compose up -d
+   ```
+
+## Troubleshooting
+
+### Connection Issues
+
+Check service status:
+```bash
+docker-compose ps
+```
+
+### Database Connection Failed
+
+Verify database is running:
+```bash
+docker-compose logs osticket-db
+```
+
+Test database connectivity:
+```bash
+docker-compose exec osticket-db mysql -u osticket -posticketpass123 -e "SELECT 1;"
+```
+
+### File Permission Errors
+
+Fix ownership:
+```bash
+docker-compose exec osticket chown -R www-data:www-data /var/www/html
+```
+
+### Reset Admin Password
+
+1. Connect to the database:
+   ```bash
+   docker-compose exec osticket-db mysql -u root -prootpassword123 osticket
+   ```
+
+2. Run in MySQL prompt:
+   ```sql
+   UPDATE ost_staff SET passwd = MD5('newpassword') WHERE username = 'admin';
+   ```
+
+### View Container Logs
+
+```bash
+# All logs
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f osticket
+```
+
+## Project Structure
+
+```
+osticket-docker/
+├── docker-compose.yml    # Main configuration file
+├── README.md            # This file
+└── mysql-init/          # Optional: Custom SQL initialization scripts
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues and pull requests.
+
+## License
+
+This Docker setup is provided as-is for educational and development purposes. osTicket itself is licensed under GPL v2.
+
+## Support
+
+For issues specific to this Docker setup, please open an issue on GitHub. For osTicket-specific questions, refer to the [official osTicket documentation](https://docs.osticket.com/).
+
+---
+
+**⚠️ Important**: This setup uses default credentials for demonstration purposes. Always change these values before deploying to production environments.
