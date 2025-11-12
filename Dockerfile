@@ -1,5 +1,5 @@
 # Base image with Apache, PHP and MySQL support
-FROM php:8.2-apache
+FROM php:8.2-apache-bookworm
 
 # Install required PHP extensions
 RUN apt-get update && apt-get install -y \
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libonig-dev \
     libxml2-dev \
-    libc-client2007e-dev \
+    libc-client-dev \
     libkrb5-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
