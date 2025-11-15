@@ -1,3 +1,5 @@
+## Written for the "latest" version of osticket (v1.18-git)
+
 # Base image with Apache, PHP and MySQL support
 FROM php:8.2-apache-bookworm
 
@@ -37,6 +39,12 @@ RUN php manage.php deploy --setup /var/www/html/
 
 # Fix permissions
 RUN chown -R www-data:www-data /var/www/html
+
+# Rename the sample file include/ost-sampleconfig.php to ost-config.php
+RUN cp /var/www/html/include/ost-sampleconfig.php /var/www/html/include/ost-config.php
+
+# Grant write access to ost-config.php
+RUN chmod 0666 /var/www/html/include/ost-config.php
 
 # Expose port 80
 EXPOSE 80

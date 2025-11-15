@@ -1,3 +1,5 @@
+name: docker
+
 services:
   osticket-mysql:
     image: mysql:8.0
