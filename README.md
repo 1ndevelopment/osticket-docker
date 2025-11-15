@@ -25,9 +25,9 @@ A production-ready Docker Compose configuration for osTicket with MySQL 8.0 and 
    cd osticket-docker
    ```
 
-2. Launch the stack:
+2. Build and launch the stack:
    ```bash
-   docker-compose up -d
+   ./build-run.sh
    ```
 
 3. Wait for initialization (2-3 minutes on first run)
