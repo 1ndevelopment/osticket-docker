@@ -19,8 +19,9 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install -j$(nproc) gd mysqli intl zip xml mbstring bcmath imap \
     && a2enmod rewrite
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Install APCu extension for better performance
+RUN pecl install apcu \
+    && docker-php-ext-enable apcu
 
 # Set working directory
 WORKDIR /var/www/html

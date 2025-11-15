@@ -31,7 +31,9 @@ services:
       - osticket-network
 
   osticket-app:
-    image: osticket/osticket:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: osticket-app
     restart: always
     ports:
